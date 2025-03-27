@@ -4,15 +4,12 @@ import random
 import sys
 import math
 
-# Inicializar pygame
 pygame.init()
 
-# Configuracion de la pantalla
 WIDTH, HEIGHT = 900, 600
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Codigo de Amor")
 
-# Colores
 BACKGROUND = (15, 15, 20)
 WHITE = (255, 255, 255)
 BLUE = (65, 105, 225)
@@ -23,24 +20,22 @@ GRAY = (52, 73, 94)
 ACCENT = (241, 196, 15)
 HEART_COLOR = (255, 105, 180)
 
-# Fuentes
 title_font = pygame.font.SysFont('Arial', 42)
 code_font = pygame.font.SysFont('Consolas', 24)
 days_font = pygame.font.SysFont('Arial', 32)
 button_font = pygame.font.SysFont('Arial', 28)
 
-# Variables para la animacion
 days = 0
-max_days = 200  # Ajustado para que dure aproximadamente 13 segundos
+max_days = 200  # 13 segundos approx
 code_written = ["def codigo_para_ella():"]
 animation_started = False
-hearts = []  # Para almacenar los corazones que flotan
-thought_index = 0  # Para controlar qué pensamiento mostrar
-thought_timer = 0  # Contador para controlar cuánto tiempo mostrar cada pensamiento
-thought_change_rate = 25  # Cambiar pensamiento cada X frames (más alto = más lento)
+hearts = []
+thought_index = 0
+thought_timer = 0
+thought_change_rate = 25
 
+# Los pensamientos mas cursis que se me ocurrieron a las 3am
 thoughts = [
-    # Pensamientos románticos
     "No puedo dejar de pensar en ella...",
     "Su sonrisa es como mi mejor codigo",
     "Quisiera ser tan valiente como para hablarle",
@@ -83,7 +78,6 @@ thoughts = [
     "Su voz es como el sonido de una compilacion exitosa",
 ]
 
-# Clase para el corazón flotante
 class Heart:
     def __init__(self):
         self.x = random.randint(50, WIDTH - 50)
@@ -97,6 +91,7 @@ class Heart:
         
     def update(self):
         self.y -= self.speed
+        # movimiento de lado a lado tipo seno
         self.x += math.sin(self.wobble_offset + time.time() * self.wobble_speed) * self.wobble
         if self.y < -20:
             self.y = random.randint(HEIGHT + 10, HEIGHT + 100)
@@ -116,7 +111,6 @@ class Heart:
         ])
         screen.blit(heart_surface, (self.x - self.size, self.y - self.size))
 
-# Clase para el boton
 class Button:
     def __init__(self, text, x, y, width, height, color, hover_color, text_color):
         self.text = text
@@ -143,7 +137,6 @@ class Button:
         self.current_color = self.color
         return False
 
-# Crear el boton de inicio
 start_button = Button(
     "COMENZAR", 
     WIDTH//2 - 100, 
@@ -155,17 +148,16 @@ start_button = Button(
     WHITE
 )
 
-# Inicializar algunos corazones
+# pa' que se vea bonito
 for _ in range(15):
     hearts.append(Heart())
 
 def draw_terminal_background():
-    # Dibujar fondo tipo terminal
-    terminal_rect = pygame.Rect(40, 220, WIDTH - 80, 280)  # Reducida altura para dejar espacio abajo
+    terminal_rect = pygame.Rect(40, 220, WIDTH - 80, 280)
     pygame.draw.rect(screen, (30, 30, 35), terminal_rect, 0, 8)
     pygame.draw.rect(screen, (50, 50, 55), terminal_rect, 2, 8)
     
-    # Dibujar los círculos de control de la ventana de terminal
+    # los circulitos tipo mac
     pygame.draw.circle(screen, RED, (60, 240), 8)
     pygame.draw.circle(screen, ACCENT, (85, 240), 8)
     pygame.draw.circle(screen, GREEN, (110, 240), 8)
@@ -173,20 +165,16 @@ def draw_terminal_background():
 def draw_welcome_screen():
     screen.fill(BACKGROUND)
     
-    # Actualizar y dibujar corazones
     for heart in hearts:
         heart.update()
         heart.draw()
     
-    # Título
     title = title_font.render("CÓDIGO PARA ELLA", True, PINK)
     screen.blit(title, (WIDTH//2 - title.get_width()//2, HEIGHT//2 - 100))
     
-    # Subtítulo
     subtitle = code_font.render("Una historia de amor y programacion", True, GRAY)
     screen.blit(subtitle, (WIDTH//2 - subtitle.get_width()//2, HEIGHT//2 - 40))
     
-    # Dibujar botón
     start_button.draw()
     
     pygame.display.flip()
@@ -196,41 +184,35 @@ def draw_animation_screen():
     
     screen.fill(BACKGROUND)
     
-    # Actualizar y dibujar corazones al fondo
     for heart in hearts:
         heart.update()
         heart.draw()
     
-    # Dibujar título
     title = title_font.render("ESCRIBIRÉ UNA LÍNEA DE CÓDIGO", True, WHITE)
     subtitle = title_font.render("CADA VEZ QUE DEJE DE PENSAR EN ELLA", True, PINK)
     screen.blit(title, (WIDTH//2 - title.get_width()//2, 50))
     screen.blit(subtitle, (WIDTH//2 - subtitle.get_width()//2, 110))
     
-    # Dibujar contador de días
     days_text = days_font.render(f"Día {days}", True, RED)
     screen.blit(days_text, (WIDTH//2 - days_text.get_width()//2, 170))
     
-    # Dibujar fondo tipo terminal
     draw_terminal_background()
     
-    # Dibujar código
     for i, line in enumerate(code_written):
         code_line = code_font.render(line, True, GREEN)
         screen.blit(code_line, (70, 280 + i * 30))
     
-    # Dibujar cursor parpadeante si solo hay una línea
+    # cursor parpadeante a lo hacker
     if len(code_written) == 1 and days % 10 < 5:
         cursor_pos = (70 + code_font.size(code_written[0])[0], 280)
         pygame.draw.rect(screen, GREEN, (cursor_pos[0], cursor_pos[1], 10, 24))
     
-    # Actualizar pensamiento más lentamente
     thought_timer += 1
     if thought_timer >= thought_change_rate:
         thought_timer = 0
         thought_index = (thought_index + 1) % len(thoughts)
     
-    # Dibujar pensamiento DEBAJO de la terminal
+    # dibujito del pensamiento abajo, pal drama
     if days > 0:
         thought = code_font.render(thoughts[thought_index], True, ACCENT)
         thought_bubble = pygame.Rect(WIDTH//2 - thought.get_width()//2 - 10, 520, thought.get_width() + 20, 40)
@@ -238,7 +220,7 @@ def draw_animation_screen():
         pygame.draw.rect(screen, (60, 60, 65), thought_bubble, 2, 10)
         screen.blit(thought, (WIDTH//2 - thought.get_width()//2, 530))
         
-        # Dibujar un pequeño corazón junto al pensamiento
+        # corazoncito pa que se vea cute
         heart_size = 8
         heart_pos = (WIDTH//2 - thought.get_width()//2 - 20, 530 + thought.get_height()//2)
         pygame.draw.polygon(screen, HEART_COLOR, [
@@ -255,6 +237,7 @@ def draw_animation_screen():
     pygame.display.flip()
 
 def handle_ending():
+    # efecto de fade pa' que se vea bien dramático
     fade_surface = pygame.Surface((WIDTH, HEIGHT))
     fade_surface.fill(BACKGROUND)
     
@@ -271,7 +254,7 @@ def handle_ending():
         sub_text.set_alpha(alpha)
         screen.blit(sub_text, (WIDTH//2 - sub_text.get_width()//2, HEIGHT//2 + 60))
         
-        # Dibujar corazón grande
+        # corazón grandote pal final
         if alpha > 50:
             heart_size = 30
             heart_pos = (WIDTH//2, HEIGHT//2 + 120)
@@ -292,6 +275,7 @@ def handle_ending():
         pygame.display.flip()
         time.sleep(0.05)
     
+    # dejamos que lo vean un rato y ya
     time.sleep(5)
 
 def run_game():
@@ -322,13 +306,13 @@ def run_game():
             draw_animation_screen()
             
             if days == 0:
-                time.sleep(2)  # Pausa inicial
+                time.sleep(2)  # pa que agarren el concepto
                 days = 1
             else:
                 time.sleep(0.08)
                 days += 1
                 
-                # Final de la animación
+                # ya se acabó la cosa
                 if days >= max_days:
                     handle_ending()
                     running = False
